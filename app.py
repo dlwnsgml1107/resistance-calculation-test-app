@@ -127,7 +127,7 @@ def render_color_table():
             <td><span class="color-chip" style="background:{info['hex']};{swatch_border}"></span>
                 <b>{color_name}</b></td>
             <td>{'-' if info['digit'] is None else info['digit']}</td>
-            <td>×{info['multiplier']:g}</td>
+            <td>×{convert_resistance(info['multiplier']).replace('Ω', '').strip()}</td>
             <td>{'-' if info['tolerance'] is None else f"±{info['tolerance']:g}%"}</td>
             <td>{'-' if info['tempco'] is None else info['tempco']}</td>
         </tr>
