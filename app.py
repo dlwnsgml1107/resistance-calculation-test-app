@@ -7,80 +7,174 @@ st.set_page_config(
     layout="wide",
 )
 
-# 화면에 실제 색상으로 표시하기 위한 색상 코드(HEX)
-COLOR_HEX = {
-    "검정": "#202020", "갈색": "#8B4513", "빨강": "#E53935",
-    "주황": "#F57C00", "노랑": "#FDD835", "초록": "#43A047",
-    "파랑": "#1E88E5", "보라": "#8E24AA", "회색": "#9E9E9E",
-    "흰색": "#FFFFFF", "금색": "#D4AF37", "은색": "#C0C0C0",
-}
-
 # 색상별 숫자, 배율, 허용오차, 온도계수
 COLOR_DATA = {
-    "검정": {"digit": 0, "multiplier": 1, "tolerance": None, "tempco": 250},
-    "갈색": {"digit": 1, "multiplier": 10, "tolerance": 1, "tempco": 100},
-    "빨강": {"digit": 2, "multiplier": 100, "tolerance": 2, "tempco": 50},
-    "주황": {"digit": 3, "multiplier": 1_000, "tolerance": None, "tempco": 15},
-    "노랑": {"digit": 4, "multiplier": 10_000, "tolerance": None, "tempco": 25},
-    "초록": {"digit": 5, "multiplier": 100_000, "tolerance": 0.5, "tempco": 20},
-    "파랑": {"digit": 6, "multiplier": 1_000_000, "tolerance": 0.25, "tempco": 10},
-    "보라": {"digit": 7, "multiplier": 10_000_000, "tolerance": 0.1, "tempco": 5},
-    "회색": {"digit": 8, "multiplier": 100_000_000, "tolerance": 0.05, "tempco": 1},
-    "흰색": {"digit": 9, "multiplier": 1_000_000_000, "tolerance": None, "tempco": None},
-    "금색": {"digit": None, "multiplier": 0.1, "tolerance": 5, "tempco": None},
-    "은색": {"digit": None, "multiplier": 0.01, "tolerance": 10, "tempco": None},
+    "검정": {"digit": 0, "multiplier": 1, "tolerance": None, "tempco": 250, "hex": "#222222"},
+    "갈색": {"digit": 1, "multiplier": 10, "tolerance": 1, "tempco": 100, "hex": "#8B4513"},
+    "빨강": {"digit": 2, "multiplier": 100, "tolerance": 2, "tempco": 50, "hex": "#E53935"},
+    "주황": {"digit": 3, "multiplier": 1_000, "tolerance": None, "tempco": 15, "hex": "#F57C00"},
+    "노랑": {"digit": 4, "multiplier": 10_000, "tolerance": None, "tempco": 25, "hex": "#FDD835"},
+    "초록": {"digit": 5, "multiplier": 100_000, "tolerance": 0.5, "tempco": 20, "hex": "#43A047"},
+    "파랑": {"digit": 6, "multiplier": 1_000_000, "tolerance": 0.25, "tempco": 10, "hex": "#1E88E5"},
+    "보라": {"digit": 7, "multiplier": 10_000_000, "tolerance": 0.1, "tempco": 5, "hex": "#8E24AA"},
+    "회색": {"digit": 8, "multiplier": 100_000_000, "tolerance": 0.05, "tempco": 1, "hex": "#9E9E9E"},
+    "흰색": {"digit": 9, "multiplier": 1_000_000_000, "tolerance": None, "tempco": None, "hex": "#FFFFFF"},
+    "금색": {"digit": None, "multiplier": 0.1, "tolerance": 5, "tempco": None, "hex": "#D4AF37"},
+    "은색": {"digit": None, "multiplier": 0.01, "tolerance": 10, "tempco": None, "hex": "#C0C0C0"},
 }
 
-DIGIT_COLORS = [
-    color for color, data in COLOR_DATA.items()
-    if data["digit"] is not None
-]
+DIGIT_COLORS = [name for name, data in COLOR_DATA.items() if data["digit"] is not None]
 MULTIPLIER_COLORS = list(COLOR_DATA.keys())
-TOLERANCE_COLORS = [
-    color for color, data in COLOR_DATA.items()
-    if data["tolerance"] is not None
-]
-TEMPCO_COLORS = [
-    color for color, data in COLOR_DATA.items()
-    if data["tempco"] is not None
-]
+TOLERANCE_COLORS = [name for name, data in COLOR_DATA.items() if data["tolerance"] is not None]
+TEMPCO_COLORS = [name for name, data in COLOR_DATA.items() if data["tempco"] is not None]
 
 
 def convert_resistance(value):
-    """저항값 크기에 따라 적절한 단위로 변환해 문자열로 반환한다."""
     if value >= 1_000_000_000:
         return f"{value / 1_000_000_000:g} GΩ"
     elif value >= 1_000_000:
         return f"{value / 1_000_000:g} MΩ"
     elif value >= 1_000:
         return f"{value / 1_000:g} kΩ"
-    else:
-        return f"{value:g} Ω"
+    return f"{value:g} Ω"
+
+
+def text_color(color_name):
+    return "#FFFFFF" if color_name in ["검정", "갈색", "빨강", "파랑", "보라"] else "#222222"
+
+
+def render_resistor(color_bands):
+    band_html = ""
+    for index, color_name in enumerate(color_bands, start=1):
+        band_html += f"""
+        <div class="resistor-band-wrap">
+            <div class="resistor-band" style="background:{COLOR_DATA[color_name]['hex']};
+                 {'border:1px solid #777;' if color_name == '흰색' else ''}"></div>
+            <span class="band-caption">{index}번째 · {color_name}</span>
+        </div>
+        """
+
+    st.markdown(
+        f"""
+        <style>
+        .resistor-card {{
+            background: linear-gradient(135deg, #f8fafc, #eef2f7);
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 22px 18px 16px;
+            margin: 8px 0 18px;
+            overflow: hidden;
+        }}
+        .resistor-stage {{
+            display:flex; align-items:center; justify-content:center;
+            min-height:105px; padding:8px 0 14px;
+        }}
+        .resistor-wire {{
+            height:7px; width:12%; background:linear-gradient(#b7b7b7,#777,#c9c9c9);
+            border-radius:4px;
+        }}
+        .resistor-body {{
+            display:flex; align-items:stretch; justify-content:space-evenly;
+            width:70%; height:62px; padding:0 15px;
+            background:linear-gradient(180deg,#f4d9a6 0%,#e9c58b 22%,#d9ad6e 52%,#c99758 100%);
+            border:1px solid #bd925e; border-radius:18px;
+            box-shadow: inset 0 5px 8px rgba(255,255,255,.45),
+                        inset 0 -6px 8px rgba(105,65,25,.16),
+                        0 5px 10px rgba(0,0,0,.12);
+            gap:9px;
+        }}
+        .resistor-band-wrap {{
+            display:flex; flex-direction:column; align-items:center;
+            justify-content:center; min-width:0; flex:1;
+        }}
+        .resistor-band {{
+            width:100%; max-width:25px; height:62px;
+            box-shadow: inset 2px 0 3px rgba(255,255,255,.25),
+                        inset -2px 0 3px rgba(0,0,0,.2);
+        }}
+        .band-caption {{
+            font-size:12px; font-weight:650; color:#334155;
+            margin-top:9px; white-space:nowrap;
+        }}
+        .resistor-caption {{
+            text-align:center; color:#64748b; font-size:12px; margin-top:3px;
+        }}
+        @media (max-width: 650px) {{
+            .resistor-body {{ width:76%; gap:5px; padding:0 8px; }}
+            .resistor-band {{ max-width:18px; }}
+            .band-caption {{ font-size:10px; }}
+        }}
+        </style>
+        <div class="resistor-card">
+            <div class="resistor-stage">
+                <div class="resistor-wire"></div>
+                <div class="resistor-body">{band_html}</div>
+                <div class="resistor-wire"></div>
+            </div>
+            <div class="resistor-caption">선택한 색상띠를 실제 저항처럼 표시한 모습</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_color_table():
+    rows = ""
+    for color_name, info in COLOR_DATA.items():
+        swatch_border = "border:1px solid #999;" if color_name == "흰색" else ""
+        rows += f"""
+        <tr>
+            <td><span class="color-chip" style="background:{info['hex']};{swatch_border}"></span>
+                <b>{color_name}</b></td>
+            <td>{'-' if info['digit'] is None else info['digit']}</td>
+            <td>×{info['multiplier']:g}</td>
+            <td>{'-' if info['tolerance'] is None else f"±{info['tolerance']:g}%"}</td>
+            <td>{'-' if info['tempco'] is None else info['tempco']}</td>
+        </tr>
+        """
+
+    st.markdown(
+        f"""
+        <style>
+        .code-table {{width:100%; border-collapse:collapse; font-size:13px;}}
+        .code-table th {{background:#edf2f7; color:#334155; font-weight:700;}}
+        .code-table th,.code-table td {{
+            padding:8px 6px; border-bottom:1px solid #e5e7eb; text-align:center;
+        }}
+        .code-table tr:nth-child(even) {{background:#f8fafc;}}
+        .code-table td:first-child {{text-align:left; white-space:nowrap;}}
+        .color-chip {{
+            display:inline-block; width:17px; height:17px; border-radius:4px;
+            vertical-align:middle; margin-right:7px; box-shadow:0 1px 3px #0002;
+        }}
+        </style>
+        <table class="code-table">
+            <thead><tr><th>색상</th><th>숫자</th><th>배율</th><th>허용오차</th><th>온도계수</th></tr></thead>
+            <tbody>{rows}</tbody>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 st.title("🔌 저항 색상띠 계산기")
-st.caption("데스크톱 화면 기준으로 입력, 계산 결과, 색상 코드표를 가로로 배치했습니다.")
+st.caption("색상띠를 선택하면 실제 저항 모양과 저항값을 함께 확인할 수 있습니다.")
 
-# 세 영역을 한 행에 배치
-input_col, result_col, table_col = st.columns([1.1, 1.0, 1.45], gap="medium")
+input_col, result_col, table_col = st.columns([1.08, 1.0, 1.35], gap="large")
 
 with input_col:
     st.subheader("① 색상띠 입력")
     band_count = st.radio(
-        "색상띠 개수",
-        [4, 5, 6],
-        horizontal=True,
+        "색상띠 개수", [4, 5, 6], horizontal=True,
         format_func=lambda number: f"{number}색띠",
     )
 
-    # 색상띠 개수에 따라 입력 항목과 계산 규칙을 분기
     if band_count == 4:
         st.caption("유효숫자 2자리 · 배율 · 허용오차")
-        band1 = st.selectbox("첫째 띠", DIGIT_COLORS, index=1)
-        band2 = st.selectbox("둘째 띠", DIGIT_COLORS, index=0)
+        band1 = st.selectbox("첫째 띠 · 첫 번째 숫자", DIGIT_COLORS, index=1)
+        band2 = st.selectbox("둘째 띠 · 두 번째 숫자", DIGIT_COLORS, index=0)
         band3 = st.selectbox("셋째 띠 · 배율", MULTIPLIER_COLORS, index=2)
         band4 = st.selectbox("넷째 띠 · 허용오차", TOLERANCE_COLORS, index=0)
-
         color_bands = [band1, band2, band3, band4]
         significant = COLOR_DATA[band1]["digit"] * 10 + COLOR_DATA[band2]["digit"]
         multiplier = COLOR_DATA[band3]["multiplier"]
@@ -89,12 +183,11 @@ with input_col:
 
     elif band_count == 5:
         st.caption("유효숫자 3자리 · 배율 · 허용오차")
-        band1 = st.selectbox("첫째 띠", DIGIT_COLORS, index=1)
-        band2 = st.selectbox("둘째 띠", DIGIT_COLORS, index=0)
-        band3 = st.selectbox("셋째 띠", DIGIT_COLORS, index=0)
+        band1 = st.selectbox("첫째 띠 · 첫 번째 숫자", DIGIT_COLORS, index=1)
+        band2 = st.selectbox("둘째 띠 · 두 번째 숫자", DIGIT_COLORS, index=0)
+        band3 = st.selectbox("셋째 띠 · 세 번째 숫자", DIGIT_COLORS, index=0)
         band4 = st.selectbox("넷째 띠 · 배율", MULTIPLIER_COLORS, index=2)
         band5 = st.selectbox("다섯째 띠 · 허용오차", TOLERANCE_COLORS, index=0)
-
         color_bands = [band1, band2, band3, band4, band5]
         significant = (
             COLOR_DATA[band1]["digit"] * 100
@@ -107,13 +200,12 @@ with input_col:
 
     else:
         st.caption("유효숫자 3자리 · 배율 · 허용오차 · 온도계수")
-        band1 = st.selectbox("첫째 띠", DIGIT_COLORS, index=1)
-        band2 = st.selectbox("둘째 띠", DIGIT_COLORS, index=0)
-        band3 = st.selectbox("셋째 띠", DIGIT_COLORS, index=0)
+        band1 = st.selectbox("첫째 띠 · 첫 번째 숫자", DIGIT_COLORS, index=1)
+        band2 = st.selectbox("둘째 띠 · 두 번째 숫자", DIGIT_COLORS, index=0)
+        band3 = st.selectbox("셋째 띠 · 세 번째 숫자", DIGIT_COLORS, index=0)
         band4 = st.selectbox("넷째 띠 · 배율", MULTIPLIER_COLORS, index=2)
         band5 = st.selectbox("다섯째 띠 · 허용오차", TOLERANCE_COLORS, index=0)
         band6 = st.selectbox("여섯째 띠 · 온도계수", TEMPCO_COLORS, index=1)
-
         color_bands = [band1, band2, band3, band4, band5, band6]
         significant = (
             COLOR_DATA[band1]["digit"] * 100
@@ -124,70 +216,34 @@ with input_col:
         tolerance = COLOR_DATA[band5]["tolerance"]
         tempco = COLOR_DATA[band6]["tempco"]
 
-    # 선택한 색상띠를 자리 순서대로 리스트에 저장
+    st.markdown("**선택한 색상띠 미리보기**")
+    render_resistor(color_bands)
+
     selected_colors = []
     for position, color_name in enumerate(color_bands, start=1):
-        selected_colors.append({
-            "자리": position,
-            "색상": color_name,
-        })
+        selected_colors.append({"자리": position, "색상": color_name})
 
-    st.markdown("**선택한 색상띠 모양**")
-    # 각 띠를 실제 색상으로 가로로 나열해 저항의 색상띠처럼 표시
-    band_visual = pd.DataFrame(
-        [[f"{position}번째 띠\n{color_name}" for position, color_name in enumerate(color_bands, start=1)]],
-        columns=[f"{position}번째" for position in range(1, len(color_bands) + 1)],
-    )
-    band_styler = band_visual.style
-    for position, color_name in enumerate(color_bands, start=1):
-        text_color = "white" if color_name in ["검정", "갈색", "빨강", "파랑", "보라"] else "black"
-        band_styler = band_styler.set_properties(
-            subset=[f"{position}번째"],
-            **{
-                "background-color": COLOR_HEX[color_name],
-                "color": text_color,
-                "font-weight": "bold",
-                "text-align": "center",
-                "border": "3px solid #777777",
-                "height": "58px",
-                "white-space": "pre-wrap",
-            },
-        )
-    st.dataframe(
-        band_styler,
-        hide_index=True,
-        use_container_width=True,
-    )
+    st.dataframe(pd.DataFrame(selected_colors), hide_index=True, use_container_width=True)
 
-    st.markdown("**선택한 색상띠 순서**")
-    selected_df = pd.DataFrame(selected_colors)
-    # 색상 열의 셀 배경을 실제 띠 색으로 표시
-    selected_styler = selected_df.style.map(
-        lambda color: (
-            f"background-color: {COLOR_HEX[color]}; "
-            f"color: {'white' if color in ['검정', '갈색', '빨강', '파랑', '보라'] else 'black'}; "
-            "font-weight: bold; text-align: center;"
-        ),
-        subset=["색상"],
-    )
-    st.dataframe(
-        selected_styler,
-        hide_index=True,
-        use_container_width=True,
-    )
-
-# 입력값을 이용해 공통 계산
 resistance = significant * multiplier
 minimum = resistance * (1 - tolerance / 100)
 maximum = resistance * (1 + tolerance / 100)
 
 with result_col:
     st.subheader("② 계산 결과")
-
-    # HTML 대신 Streamlit의 기본 성공 메시지로 저항값 강조
-    st.success(
-        f"### {convert_resistance(resistance)}\n\n"
-        f"허용오차: ±{tolerance:g}%"
+    st.markdown(
+        f"""
+        <div style="background:linear-gradient(135deg,#e8f8ee,#d5f2df);
+                    border:1px solid #a8dfba;border-radius:16px;padding:18px 20px;
+                    margin:8px 0 18px;">
+            <div style="font-size:13px;color:#287344;font-weight:700;">최종 저항값</div>
+            <div style="font-size:30px;font-weight:800;color:#176b39;margin:5px 0;">
+                {convert_resistance(resistance)}
+            </div>
+            <div style="font-size:14px;color:#287344;">허용오차 ±{tolerance:g}%</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     st.markdown("**계산 과정**")
@@ -214,7 +270,6 @@ with result_col:
         f"④ 허용 범위: **{convert_resistance(minimum)} ~ "
         f"{convert_resistance(maximum)}**"
     )
-
     if band_count == 6:
         st.write(f"⑤ 온도계수: **{tempco} ppm/°C**")
 
@@ -224,36 +279,8 @@ with result_col:
 
 with table_col:
     st.subheader("③ 저항 색상 코드표")
-    st.caption("색상띠를 실제 색으로 표시 · 숫자 · 배율 · 허용오차 · 온도계수")
-
-    # for 반복문으로 색상 코드표의 행 생성
-    table_rows = []
-    for color_name, info in COLOR_DATA.items():
-        table_rows.append({
-            "색상": color_name,
-            "색상띠": "　",
-            "숫자": "-" if info["digit"] is None else info["digit"],
-            "배율": f"×{info['multiplier']:g}",
-            "허용오차": "-" if info["tolerance"] is None else f"±{info['tolerance']:g}%",
-            "온도계수": "-" if info["tempco"] is None else info["tempco"],
-        })
-
-    color_df = pd.DataFrame(table_rows)
-    # 색상띠 열에 색상별 배경색을 적용
-    color_styler = color_df.style.apply(
-        lambda column: [
-            f"background-color: {COLOR_HEX[color_name]}; "
-            f"color: {'white' if color_name in ['검정', '갈색', '빨강', '파랑', '보라'] else 'black'};"
-            for color_name in color_df["색상"]
-        ],
-        subset=["색상띠"],
-    )
-    st.dataframe(
-        color_styler,
-        hide_index=True,
-        use_container_width=True,
-        height=520,
-    )
+    st.caption("색상별 숫자 · 배율 · 허용오차 · 온도계수")
+    render_color_table()
 
 st.caption(
     "※ 6색띠의 여섯째 띠는 온도계수(ppm/°C)입니다. "
