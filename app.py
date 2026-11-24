@@ -276,7 +276,3 @@ with table_col:
     st.caption("색상별 숫자 · 배율 · 허용오차 · 온도계수")
     render_color_table()
 
-st.caption(
-    "※ 6색띠의 여섯째 띠는 온도계수(ppm/°C)입니다. "
-    "실제 부품의 색상 코드 및 규격은 제조사에 따라 차이가 있을 수 있습니다."
-)
