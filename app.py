@@ -219,12 +219,6 @@ with input_col:
     st.markdown("**선택한 색상띠 미리보기**")
     render_resistor(color_bands)
 
-    selected_colors = []
-    for position, color_name in enumerate(color_bands, start=1):
-        selected_colors.append({"자리": position, "색상": color_name})
-
-    st.dataframe(pd.DataFrame(selected_colors), hide_index=True, use_container_width=True)
-
 resistance = significant * multiplier
 minimum = resistance * (1 - tolerance / 100)
 maximum = resistance * (1 + tolerance / 100)
