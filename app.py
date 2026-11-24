@@ -310,9 +310,6 @@ with result_col:
     if band_count == 6:
         st.write(f"⑤ 온도계수: **{tempco} ppm/°C**")
 
-    st.markdown("**저항값 범위**")
-    st.metric("최솟값", convert_resistance(minimum))
-    st.metric("최댓값", convert_resistance(maximum))
 
 with table_col:
     st.subheader("③ 저항 색상 코드표")
