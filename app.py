@@ -204,10 +204,10 @@ with right:
 
 st.divider()
 
-# 색상표를 반복문(for)으로 생성
-st.subheader("③ 저항 색상 코드표")
-st.caption("색상별 숫자, 배율, 허용오차 및 6색띠에서 사용하는 온도계수를 정리한 표입니다.")
+# 색상표를 반복문(for)으로 생성하고, 계산 결과 아래가 아닌 오른쪽 열에 배치
+result_column, table_column = st.columns([1, 1.25], gap="large")
 
+# 표에 들어갈 자료를 for문으로 정리
 table_rows = []
 for color_name, info in COLOR_DATA.items():
     digit_text = "-" if info["digit"] is None else str(info["digit"])
@@ -224,27 +224,42 @@ for color_name, info in COLOR_DATA.items():
         }
     )
 
-# 행과 셀을 for문으로 순회해 HTML 표를 구성
-html_table = """
-<table style="width:100%; border-collapse:collapse; text-align:center;">
-<thead>
-<tr style="background:#E8F5E9;">
-<th style="padding:9px; border:1px solid #ccc;">색상</th>
-<th style="padding:9px; border:1px solid #ccc;">숫자</th>
-<th style="padding:9px; border:1px solid #ccc;">배율</th>
-<th style="padding:9px; border:1px solid #ccc;">허용오차</th>
-<th style="padding:9px; border:1px solid #ccc;">온도계수</th>
-</tr>
-</thead><tbody>
-"""
-for row in table_rows:
-    html_table += "<tr>"
-    for key in ["색상", "숫자", "배율", "허용오차", "온도계수"]:
-        html_table += f"<td style='padding:8px; border:1px solid #ccc;'>{row[key]}</td>"
-    html_table += "</tr>"
-html_table += "</tbody></table>"
+with result_column:
+    st.subheader("③ 계산 요약")
+    st.write("선택한 색상띠:", " → ".join(color_bands))
+    st.write(f"유효숫자: **{significant}**")
+    st.write(f"배율: **×{multiplier:g}**")
+    st.write(f"최종 저항값: **{convert_resistance(resistance)}**")
+    st.write(f"허용오차: **±{tolerance:g}%**")
+    if band_count == 6:
+        st.write(f"온도계수: **{tempco} ppm/°C**")
 
-st.markdown(html_table, unsafe_allow_html=True)
+with table_column:
+    st.subheader("④ 저항 색상 코드표")
+    st.caption("색상별 숫자, 배율, 허용오차 및 온도계수")
+
+    # 행과 셀을 for문으로 순회해 HTML 표를 구성
+    html_table = """
+    <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; text-align:center; font-size:0.9rem;">
+    <thead>
+    <tr style="background:#E8F5E9;">
+    <th style="padding:8px; border:1px solid #ccc;">색상</th>
+    <th style="padding:8px; border:1px solid #ccc;">숫자</th>
+    <th style="padding:8px; border:1px solid #ccc;">배율</th>
+    <th style="padding:8px; border:1px solid #ccc;">허용오차</th>
+    <th style="padding:8px; border:1px solid #ccc;">온도계수</th>
+    </tr>
+    </thead><tbody>
+    """
+    for row in table_rows:
+        html_table += "<tr>"
+        for key in ["색상", "숫자", "배율", "허용오차", "온도계수"]:
+            html_table += f"<td style='padding:7px; border:1px solid #ccc;'>{row[key]}</td>"
+        html_table += "</tr>"
+    html_table += "</tbody></table></div>"
+
+    st.markdown(html_table, unsafe_allow_html=True)
 
 st.info(
     "참고: 6색띠의 여섯째 띠는 온도 변화에 따른 저항값 변화를 나타내는 "
