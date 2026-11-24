@@ -132,6 +132,33 @@ with input_col:
             "색상": color_name,
         })
 
+    st.markdown("**선택한 색상띠 모양**")
+    # 각 띠를 실제 색상으로 가로로 나열해 저항의 색상띠처럼 표시
+    band_visual = pd.DataFrame(
+        [[f"{position}번째 띠\n{color_name}" for position, color_name in enumerate(color_bands, start=1)]],
+        columns=[f"{position}번째" for position in range(1, len(color_bands) + 1)],
+    )
+    band_styler = band_visual.style
+    for position, color_name in enumerate(color_bands, start=1):
+        text_color = "white" if color_name in ["검정", "갈색", "빨강", "파랑", "보라"] else "black"
+        band_styler = band_styler.set_properties(
+            subset=[f"{position}번째"],
+            **{
+                "background-color": COLOR_HEX[color_name],
+                "color": text_color,
+                "font-weight": "bold",
+                "text-align": "center",
+                "border": "3px solid #777777",
+                "height": "58px",
+                "white-space": "pre-wrap",
+            },
+        )
+    st.dataframe(
+        band_styler,
+        hide_index=True,
+        use_container_width=True,
+    )
+
     st.markdown("**선택한 색상띠 순서**")
     selected_df = pd.DataFrame(selected_colors)
     # 색상 열의 셀 배경을 실제 띠 색으로 표시
