@@ -7,6 +7,14 @@ st.set_page_config(
     layout="wide",
 )
 
+# 화면에 실제 색상으로 표시하기 위한 색상 코드(HEX)
+COLOR_HEX = {
+    "검정": "#202020", "갈색": "#8B4513", "빨강": "#E53935",
+    "주황": "#F57C00", "노랑": "#FDD835", "초록": "#43A047",
+    "파랑": "#1E88E5", "보라": "#8E24AA", "회색": "#9E9E9E",
+    "흰색": "#FFFFFF", "금색": "#D4AF37", "은색": "#C0C0C0",
+}
+
 # 색상별 숫자, 배율, 허용오차, 온도계수
 COLOR_DATA = {
     "검정": {"digit": 0, "multiplier": 1, "tolerance": None, "tempco": 250},
@@ -125,8 +133,18 @@ with input_col:
         })
 
     st.markdown("**선택한 색상띠 순서**")
+    selected_df = pd.DataFrame(selected_colors)
+    # 색상 열의 셀 배경을 실제 띠 색으로 표시
+    selected_styler = selected_df.style.map(
+        lambda color: (
+            f"background-color: {COLOR_HEX[color]}; "
+            f"color: {'white' if color in ['검정', '갈색', '빨강', '파랑', '보라'] else 'black'}; "
+            "font-weight: bold; text-align: center;"
+        ),
+        subset=["색상"],
+    )
     st.dataframe(
-        pd.DataFrame(selected_colors),
+        selected_styler,
         hide_index=True,
         use_container_width=True,
     )
@@ -179,21 +197,32 @@ with result_col:
 
 with table_col:
     st.subheader("③ 저항 색상 코드표")
-    st.caption("숫자 · 배율 · 허용오차 · 온도계수")
+    st.caption("색상띠를 실제 색으로 표시 · 숫자 · 배율 · 허용오차 · 온도계수")
 
     # for 반복문으로 색상 코드표의 행 생성
     table_rows = []
     for color_name, info in COLOR_DATA.items():
         table_rows.append({
             "색상": color_name,
+            "색상띠": "　",
             "숫자": "-" if info["digit"] is None else info["digit"],
             "배율": f"×{info['multiplier']:g}",
             "허용오차": "-" if info["tolerance"] is None else f"±{info['tolerance']:g}%",
             "온도계수": "-" if info["tempco"] is None else info["tempco"],
         })
 
+    color_df = pd.DataFrame(table_rows)
+    # 색상띠 열에 색상별 배경색을 적용
+    color_styler = color_df.style.apply(
+        lambda column: [
+            f"background-color: {COLOR_HEX[color_name]}; "
+            f"color: {'white' if color_name in ['검정', '갈색', '빨강', '파랑', '보라'] else 'black'};"
+            for color_name in color_df["색상"]
+        ],
+        subset=["색상띠"],
+    )
     st.dataframe(
-        pd.DataFrame(table_rows),
+        color_styler,
         hide_index=True,
         use_container_width=True,
         height=520,
