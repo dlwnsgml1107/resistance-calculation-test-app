@@ -240,30 +240,76 @@ with result_col:
         unsafe_allow_html=True,
     )
 
-    st.markdown("**계산 과정**")
+    st.markdown(
+        """
+        <div style="background:#f8fafc;border:1px solid #dbe3ec;
+                    border-radius:14px;padding:15px 17px;margin:10px 0 14px;">
+            <div style="font-size:16px;font-weight:750;color:#263548;margin-bottom:10px;">
+                계산 과정
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     if band_count == 4:
-        st.write(
-            f"① 유효숫자: {COLOR_DATA[band1]['digit']} × 10 + "
-            f"{COLOR_DATA[band2]['digit']} = **{significant}**"
-        )
+        calculation_lines = [
+            f"유효숫자: {COLOR_DATA[band1]['digit']} × 10 + "
+            f"{COLOR_DATA[band2]['digit']} = {significant}",
+        ]
         multiplier_band = band3
     else:
-        st.write(
-            f"① 유효숫자: {COLOR_DATA[band1]['digit']} × 100 + "
+        calculation_lines = [
+            f"유효숫자: {COLOR_DATA[band1]['digit']} × 100 + "
             f"{COLOR_DATA[band2]['digit']} × 10 + "
-            f"{COLOR_DATA[band3]['digit']} = **{significant}**"
-        )
+            f"{COLOR_DATA[band3]['digit']} = {significant}",
+        ]
         multiplier_band = band4
 
-    st.write(f"② 배율: {multiplier_band} = **×{multiplier:g}**")
-    st.write(
-        f"③ 저항값: {significant} × {multiplier:g} "
-        f"= **{convert_resistance(resistance)}**"
+    calculation_lines.extend([
+        f"배율: {multiplier_band} = ×{multiplier:g}",
+        f"저항값: {significant} × {multiplier:g} = {convert_resistance(resistance)}",
+    ])
+
+    for step_number, line in enumerate(calculation_lines, start=1):
+        st.markdown(
+            f"""
+            <div style="background:#ffffff;border:1px solid #e2e8f0;
+                        border-radius:9px;padding:9px 12px;margin:6px 0;
+                        color:#334155;font-size:14px;">
+                <span style="color:#64748b;font-weight:700;margin-right:8px;">
+                    {step_number:02d}
+                </span>{line}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        f"""
+        <div style="background:linear-gradient(135deg,#fff8e8,#fff1d6);
+                    border:1px solid #f1d49a;border-radius:14px;
+                    padding:15px 17px;margin:10px 0 14px;">
+            <div style="font-size:16px;font-weight:750;color:#805b16;margin-bottom:10px;">
+                허용오차 범위
+            </div>
+            <div style="font-size:13px;color:#8a6a2b;margin-bottom:5px;">
+                기준 저항값 {convert_resistance(resistance)} · 허용오차 ±{tolerance:g}%
+            </div>
+            <div style="font-size:14px;color:#6b4d12;line-height:1.8;">
+                최솟값 <b>{convert_resistance(minimum)}</b><br>
+                최댓값 <b>{convert_resistance(maximum)}</b>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
-    st.write(
-        f"④ 허용 범위: **{convert_resistance(minimum)} ~ "
-        f"{convert_resistance(maximum)}**"
-    )
+
+    st.markdown("**저항값 범위**")
+    st.metric("최솟값", convert_resistance(minimum))
+    st.metric("최댓값", convert_resistance(maximum))
+
     if band_count == 6:
         st.write(f"⑤ 온도계수: **{tempco} ppm/°C**")
 
